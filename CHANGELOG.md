@@ -6,13 +6,6 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a ch
 ## [Unreleased](https://github.com/idealista/proxysql_role/tree/develop)
 ### Changed
 ### Added
+- *Initial release* @emepege
 ### Removed
 ### Fixed
-
-## [X.Y.Z](https://github.com/idealista/proxysql_role/tree/X.Y.Z)
-### [Full Changelog](https://github.com/idealista/proxysql_role/compare/1.0.0...X.Y.Z)
-### Changed
- *[#<issue_number>](https://github.com/idealista/proxysql_role/issues/<issue_number>) \<Change description\>* @\<author\>
-
-## [1.0.0](https://github.com/idealista/proxysql_role/tree/1.0.0)
-- Initial release
