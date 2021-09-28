@@ -1,0 +1,61 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  yamllint .
+  ansible-lint .
+platforms:
+  - name: proxysql
+    groups:
+      - proxysql_group
+    networks:
+      - name: percona-network
+    image: ${MOLECULE_DISTRO:-debian:buster-slim}
+    privileged: false
+    security_opts:
+      - apparmor=unconfined
+    capabilities:
+      - SYS_ADMIN
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    command: '/lib/systemd/systemd'
+    stop_signal: 'RTMIN+3'
+
+  - name: perconaxtradb1
+    groups:
+      - percona_xtradb_group
+    networks:
+      - name: percona-network
+    image: percona/percona-xtradb-cluster:8.0
+    env:
+      MYSQL_ROOT_PASSWORD: "default"
+      CLUSTER_NAME: "pxc-cluster"
+      CLUSTER_JOIN: ""
+    privileged: false
+    exposed_ports:
+      - 3306/tcp
+      - 33060/tcp
+      - 4567/tcp
+      - 4568/tcp
+    capabilities:
+      - SYS_ADMIN
+      - SYS_NICE
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    command: 'mysqld'
+    stop_signal: 'RTMIN+3'
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

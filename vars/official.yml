@@ -1,0 +1,9 @@
+---
+
+# Package URL
+proxysql_key_url: https://repo.proxysql.com/ProxySQL/repo_pub_key
+proxysql_deb_repo: "https://repo.proxysql.com/ProxySQL/proxysql-{{ proxysql_version }}.x/{{ ansible_distribution_release }}/"
+
+# Installation
+proxysql_packages:
+  - proxysql

@@ -1,0 +1,47 @@
+---
+# Version
+proxysql_version: "2"
+
+# proxysql
+proxysql_from: percona
+
+# proxysql-admin
+proxysql_admin_tool_variables:
+    proxysql_datadir: "{{ proxysql_datadir }}"
+    proxysql_username: "{{ proxysql_user_admin_interface }}"
+    proxysql_password: "{{ proxysql_password_admin_interface }}"
+    proxysql_hostname: "{{ proxysql_host_admin_interface }}"
+    proxysql_port: "{{ proxysql_port_admin_interface }}"
+    cluster_username: root
+    cluster_password: default
+    cluster_hostname: perconaxtradb1
+    cluster_port: 3306
+    monitor_username: monitor
+    monitor_password: monitor
+    cluster_app_username: proxysql_test
+    cluster_app_password: proxysql_test
+    writer_hostgroup_id: 10
+    reader_hostgroup_id: 11
+    backup_writer_hostgroup_id: 12
+    offline_hostgroup_id: 13
+    mode: singlewrite
+    max_connections: 1000
+    max_transactions_behind: 100
+    use_ssl: "no"
+    writers_are_readers: backup
+
+proxysql_global_variables:
+  - key: mysql-monitor_username
+    value: monitor
+  - key: mysql-monitor_password
+    value: monitor
+  - key: mysql-monitor_connect_interval
+    value: 2000
+  - key: mysql-monitor_ping_interval
+    value: 2000
+  - key: mysql-monitor_read_only_interval
+    value: 2000
+  - key: mysql-max_connections
+    value: 5000
+  - key: mysql-server_version
+    value: 8.0

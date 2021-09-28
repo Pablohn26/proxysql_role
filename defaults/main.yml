@@ -1,0 +1,118 @@
+---
+
+## General
+# Version
+proxysql_version: "2.2"
+
+# Installation
+#
+# For official setups you may check https://github.com/sysown/proxysql/tree/master/doc
+# For percona setups you may check https://www.percona.com/doc/percona-xtradb-cluster/8.0/howtos/proxysql-v2.html
+# 
+# allowed values in proxysql_from (official, percona)
+proxysql_from: official 
+proxysql_required_libs:
+  - default-mysql-client
+  - python-mysqldb
+  - python3-mysqldb
+
+# Configuration
+proxysql_config_file: /etc/proxysql.cnf
+proxysql_datadir: /var/lib/proxysql
+proxysql_log_path: /var/log/proxysql
+proxysql_log_file: "{{ proxysql_log_path }}/proxysql.log"
+
+proxysql_user_admin_interface: admin
+proxysql_password_admin_interface: admin
+proxysql_host_admin_interface: 0.0.0.0
+proxysql_port_admin_interface: 6032
+
+proxysql_backend_servers: []
+  # - hostgroup_id: 0
+  #   hostname: backend1
+  #   port: 3306
+  # - hostgroup_id: 0
+  #   hostname: backend2
+  #   port: 3306
+  # - hostgroup_id: 0
+  #   hostname: backend3
+  #   port: 3306
+
+proxysql_global_variables: []
+  # - key: mysql-monitor_username
+  #   value: monitor
+  # - key: mysql-monitor_password
+  #   value: monitor
+
+proxysql_replication_hostgroups: []
+  # - writer_hostgroup: 1
+  #   reader_hostgroup: 2
+
+proxysql_mysql_users: []
+  # - username: test
+  #   password: test
+  #   default_hostgroup: 1
+
+proxysql_query_rules: []
+  # - rule_id: 1
+  #   active: true
+  #   username: test
+  #   match_digest: "^SELECT c FROM sbtest1 WHERE id=\?$"
+  #   destination_hostgroup: 1
+  #   apply: true
+
+# To show available configuration variables
+# https://www.percona.com/doc/percona-xtradb-cluster/8.0/howtos/proxysql-v2.html#preparing-configuration-file
+proxysql_admin_tool_variables: []
+  # proxysql_datadir: "{{ proxysql_datadir }}"
+  # proxysql_username: "{{ proxysql_user_admin_interface }}"
+  # proxysql_password: "{{ proxysql_password_admin_interface }}"
+  # proxysql_hostname: "{{ proxysql_host_admin_interface }}"
+  # proxysql_port: "{{ proxysql_port_admin_interface }}"
+  # cluster_username: ""
+  # cluster_password: ""
+  # cluster_hostname: ""
+  # cluster_port: 3306
+  # monitor_username: monitor
+  # monitor_password: monitor
+  # cluster_app_username: proxysql_test
+  # cluster_app_password: proxysql_test
+  # writer_hostgroup_id: 10
+  # reader_hostgroup_id: 11
+  # backup_writer_hostgroup_id: 12
+  # offline_hostgroup_id: 13
+  # mode: singlewrite
+  # max_connections: 1000
+  # max_transactions_behind: 100
+  # use_ssl: "no"
+  # writers_are_readers: backup
+
+# For those variables ProxySQL needs a restart to take effect
+proxysql_non_dynamic_variables:
+  - mysql-interfaces
+  - mysql-threads
+  - mysql-stacksize
+
+# SSL configuration for backends
+# For more information https://proxysql.com/documentation/ssl-support/
+proxysql_ssl_config: false
+# proxysql_ssl_config_dir: /etc/ssl/proxysqlcerts
+# proxysql_ssl_config_playbook_path: "{{ playbook_dir }}/files/ssl/certs"
+# proxysql_ssl_client_certs:
+#   - client-cert.pem
+#   - client-key.pem
+
+proxysql_no_log: true
+
+# Set true to force the installation
+proxysql_force_reinstall: false
+proxysql_exec_name: proxysql
+
+# Owner
+proxysql_user: proxysql
+proxysql_group: proxysql
+
+# Start on boot
+proxysql_service_enabled: True
+# Current state: started, stopped
+proxysql_service_state: started

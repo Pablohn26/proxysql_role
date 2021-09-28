@@ -1,0 +1,5 @@
+---
+- name: Converge
+  hosts: proxysql_group
+  roles:
+    - role: proxysql_role

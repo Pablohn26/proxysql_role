@@ -1,0 +1,63 @@
+---
+
+service:
+  proxysql:
+    enabled: true
+    running: true
+
+process:
+  proxysql:
+    running: true
+
+group:
+  "{{ proxysql_group }}":
+    exists: true
+
+user:
+  "{{ proxysql_user }}":
+    exists: true
+    groups:
+      - "{{ proxysql_group }}"
+
+file:
+  "{{ proxysql_datadir }}":
+    owner: "{{ proxysql_user }}"
+    group: "{{ proxysql_group }}"
+    exists: true
+    filetype: directory
+    mode: "0750"
+  "{{ proxysql_log_path }}":
+    owner: "{{ proxysql_user }}"
+    group: "{{ proxysql_group }}"
+    exists: true
+    filetype: directory
+    mode: "0750"
+  "{{ proxysql_config_file }}":
+    owner: root
+    group: "{{ proxysql_group }}"
+    exists: true
+    filetype: file
+    mode: "0640"
+
+command:
+  check_replication_hostgroups:
+    exit-status: 0
+    exec: "sudo mysql -u {{ proxysql_user_admin_interface }} -p{{ proxysql_password_admin_interface }} -h {{ proxysql_host_admin_interface }} -P{{ proxysql_port_admin_interface }}  -e \"SELECT writer_hostgroup FROM mysql_replication_hostgroups;\""
+    stdout:
+    - "/^| 1/"
+    timeout: 10000
+    skip: false
+  check_backend_servers:
+    exit-status: 0
+    exec: "sudo mysql -u {{ proxysql_user_admin_interface }} -p{{ proxysql_password_admin_interface }} -h {{ proxysql_host_admin_interface }} -P{{ proxysql_port_admin_interface }}  -e \"SELECT hostname FROM mysql_servers;\""
+    stdout:
+    - "/backend1/"
+    timeout: 10000
+    skip: false
+  check_mysql_users:
+    exit-status: 0
+    exec: "sudo mysql -u {{ proxysql_user_admin_interface }} -p{{ proxysql_password_admin_interface }} -h {{ proxysql_host_admin_interface }} -P{{ proxysql_port_admin_interface }}  -e \"SELECT username FROM mysql_users;\""
+    stdout:
+    - "/proxysql_test/"
+    timeout: 10000
+    skip: false
