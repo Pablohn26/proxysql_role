@@ -1,7 +1,7 @@
 # Proxysql Ansible role
 ![Logo](logo.gif)
 
-[![Build Status](https://travis-ci.com/idealista/proxysql_role.png)](https://travis-ci.com/idealista/proxysql_role)
+[![Build Status](https://app.travis-ci.com/idealista/proxysql_role.svg)](https://app.travis-ci.com/github/idealista/proxysql_role)
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-idealista.proxysql_role-B62682.svg)](https://galaxy.ansible.com/idealista/proxysql_role)
 
 
