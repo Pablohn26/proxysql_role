@@ -1,0 +1,16 @@
+---
+
+# Package URL
+proxysql_deb_package: "percona-release_latest.generic_all.deb"
+proxysql_deb_repo: "https://repo.percona.com/apt/{{ proxysql_deb_package }}"
+
+# Package paths
+proxysql_download_path: /usr/src
+proxysql_package_path: "{{ proxysql_download_path }}/{{ proxysql_deb_package }}"
+
+# Installation
+proxysql_packages:
+  - "proxysql{{proxysql_version}}"
+
+# Configuration
+proxysql_admin_config_file: /etc/proxysql-admin.cnf

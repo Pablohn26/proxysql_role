@@ -1,0 +1,8 @@
+---
+
+- name: PROXYSQL | Installing dependencies
+  apt:
+    pkg: "{{ proxysql_required_libs }}"
+    state: present
+  tags:
+    - proxysql_dependencies

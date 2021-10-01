@@ -1,0 +1,22 @@
+---
+- name: PROXYSQL | Ensure ssl config dir exists
+  file:
+    path: "{{ proxysql_ssl_config_dir }}"
+    state: directory
+    owner: proxysql
+    group: proxysql
+    mode: 0500
+  tags:
+    - proxysql_ssl_configure
+
+- name: PROXYSQL | Copy keys and certificates (provided by playbooks)
+  copy:
+    src: "{{ proxysql_ssl_config_playbook_path }}/{{ item }}"
+    dest: "{{ proxysql_ssl_config_dir }}/{{ item }}"
+    owner: proxysql
+    group: proxysql
+    mode: 0400
+  with_items:
+    - "{{ proxysql_ssl_client_certs }}"
+  tags:
+    - proxysql_ssl_configure

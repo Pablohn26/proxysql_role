@@ -1,0 +1,39 @@
+---
+
+- name: PROXYSQL PERCONA | Gather OS specific variables
+  include_vars: "{{ proxysql_from }}.yml"
+  tags:
+    - proxysql_install
+
+- name: PROXYSQL PERCONA | Check proxysql version
+  command: "{{ proxysql_exec_name }} --version"
+  register: proxysql_check
+  changed_when: false
+  ignore_errors: true
+  check_mode: no
+  tags:
+    - proxysql_install
+
+- block:
+    - name: PROXYSQL PERCONA | Download package config deb
+      get_url:
+        url: "{{ proxysql_deb_repo }}"
+        dest: "{{ proxysql_package_path }}"
+
+    - name: PROXYSQL PERCONA | Install repository deb
+      apt:
+        deb: "{{ proxysql_package_path }}"
+
+    - name: PROXYSQL PERCONA | Update cache
+      apt:
+        update_cache: true
+        allow_unauthenticated: true
+      changed_when: false
+
+    - name: PROXYSQL PERCONA | Installing packages
+      apt:
+        pkg: "{{ proxysql_packages }}"
+        state: present
+  when: proxysql_force_reinstall or proxysql_check is failed or proxysql_version not in proxysql_check.stdout
+  tags:
+    - proxysql_install
