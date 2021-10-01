@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+
+{% if proxysql_admin_tool_variables is defined %}
+{% for name, value in proxysql_admin_tool_variables.items() %}
+export {{ name | upper }}="{{ value }}"
+{% endfor %}
+{% endif %}

@@ -1,0 +1,197 @@
+---
+
+- name: PROXYSQL | Ensure data dir exists
+  file:
+    path: "{{ proxysql_datadir }}"
+    state: directory
+    owner: "{{ proxysql_user }}"
+    group: "{{ proxysql_group }}"
+    mode: 0750
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Ensure logs dir exists
+  file:
+    path: "{{ proxysql_log_path }}"
+    state: directory
+    owner: "{{ proxysql_user }}"
+    group: "{{ proxysql_group }}"
+    mode: 0750
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Copy configuration file
+  template:
+    src: proxysql.cnf.j2
+    dest: "{{ proxysql_config_file }}"
+    owner: root
+    group: "{{ proxysql_group }}"
+    mode: 0640
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Copy percona configuration file
+  template:
+    src: proxysql-admin.cnf.j2
+    dest: "{{ proxysql_admin_config_file }}"
+    owner: root
+    group: "{{ proxysql_group }}"
+    mode: 0640
+  when: proxysql_from == 'percona'
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Ensure service is started and enabled on boot
+  service:
+    name: proxysql
+    state: started
+    enabled: "{{ proxysql_service_enabled }}"
+    daemon_reload: true
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Configure using proxysql-admin tool by Percona
+  command: "proxysql-admin --config-file={{ proxysql_admin_config_file }} --enable --update-cluster"
+  become: true
+  register: proxysql_admin
+  changed_when: '"No new nodes detected" not in proxysql_admin.stdout'
+  when: proxysql_from == 'percona'
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Manage MySQL hosts
+  proxysql_backend_servers:
+    comment: "{{ item.comment | default(omit) }}"
+    compression: "{{ item.compression | default('0') }}"
+    hostgroup_id: "{{ item.hostgroup_id | default('0') }}"
+    hostname: "{{ item.hostname }}"
+    load_to_runtime: "{{ item.load_to_runtime | default(true) }}"
+    login_host: "{{ proxysql_host_admin_interface | default('127.0.0.1') }}"
+    login_password: "{{ proxysql_password_admin_interface }}"
+    login_port: "{{ proxysql_port_admin_interface | default('6032') }}"
+    login_user: "{{ proxysql_user_admin_interface }}"
+    max_connections: "{{ item.max_connections | default('1000') }}"
+    max_latency_ms: "{{ item.max_latency_ms | default('0') }}"
+    max_replication_lag: "{{ item.max_replication_lag | default('0') }}"
+    port: "{{ item.port | default('3306') }}"
+    save_to_disk: "{{ item.save_to_disk | default(true) }}"
+    state: "{{ item.state | default('present') }}"
+    status: "{{ item.status | default('ONLINE') }}"
+    use_ssl: "{{ item.use_ssl | default('false') }}"
+    weight: "{{ item.weight | default('1') }}"
+  with_items: "{{ proxysql_backend_servers }}"
+  when: proxysql_backend_servers is defined
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Manage global variables
+  proxysql_global_variables:
+    load_to_runtime: "{{ item.load_to_runtime | default(true) }}"
+    login_host: "{{ proxysql_host_admin_interface | default('127.0.0.1') }}"
+    login_password: "{{ proxysql_password_admin_interface }}"
+    login_port: "{{ proxysql_port_admin_interface | default('6032') }}"
+    login_user: "{{ proxysql_user_admin_interface }}"
+    save_to_disk: "{{ item.save_to_disk | default(true) }}"
+    value: "{{ item.value }}"
+    variable: "{{ item.key }}"
+  with_items: "{{ proxysql_global_variables }}"
+  register: global_variables
+  no_log: "{{ proxysql_no_log }}"
+  when: proxysql_global_variables is defined
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Check if non dynamic variable have changed (restart required)
+  command: echo "Notifying ProxySQL restart for the change to take effect."
+  notify: restart proxysql
+  with_items: "{{ global_variables.results }}"
+  no_log: "{{ proxysql_no_log }}"
+  when: global_variables is defined and global_variables.changed and item.changed and item.item.key in proxysql_non_dynamic_variables
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Manage replication hostgroups
+  proxysql_replication_hostgroups:
+    comment: "{{ item.comment | default(omit) }}"
+    load_to_runtime: "{{ item.load_to_runtime | default(true) }}"
+    login_host: "{{ proxysql_host_admin_interface | default('127.0.0.1') }}"
+    login_password: "{{ proxysql_password_admin_interface }}"
+    login_port: "{{ proxysql_port_admin_interface | default('6032') }}"
+    login_user: "{{ proxysql_user_admin_interface }}"
+    reader_hostgroup: "{{ item.reader_hostgroup }}"
+    save_to_disk: "{{ item.save_to_disk | default(true) }}"
+    state: "{{ item.state | default('present') }}"
+    writer_hostgroup: "{{ item.writer_hostgroup }}"
+  with_items: "{{ proxysql_replication_hostgroups }}"
+  when: proxysql_replication_hostgroups is defined
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Manage MySQL users
+  proxysql_mysql_users:
+    active: "{{ item.active | default(true) }}"
+    backend: "{{ item.backend | default(true) }}"
+    default_hostgroup: "{{ item.default_hostgroup | default('0') }}"
+    default_schema: "{{ item.default_schema | default(omit) }}"
+    fast_forward: "{{ item.fast_forward | default(false) }}"
+    frontend: "{{ item.frontend | default(true) }}"
+    load_to_runtime: "{{ item.load_to_runtime | default(true) }}"
+    login_host: "{{ proxysql_host_admin_interface | default('127.0.0.1') }}"
+    login_password: "{{ proxysql_password_admin_interface }}"
+    login_port: "{{ proxysql_port_admin_interface | default('6032') }}"
+    login_user: "{{ proxysql_user_admin_interface }}"
+    max_connections: "{{ item.max_connections | default('10000') }}"
+    password: "{{ item.password | default(omit) }}"
+    save_to_disk: "{{ item.save_to_disk | default(true) }}"
+    state: "{{ item.state | default('present') }}"
+    transaction_persistent: "{{ item.transaction_persistent | default(false) }}"
+    use_ssl: "{{ item.use_ssl | default(false) }}"
+    username: "{{ item.username }}"
+  with_items: "{{ proxysql_mysql_users }}"
+  no_log: "{{ proxysql_no_log }}"
+  when: proxysql_mysql_users is defined
+  tags:
+    - proxysql_configure
+
+- name: PROXYSQL | Manage query rules
+  proxysql_query_rules:
+    active: "{{ item.active | default(false) }}"
+    apply: "{{ item.apply | default(false) }}"
+    cache_empty_result: "{{ item.cache_empty_result | default(false) }}"
+    cache_ttl: "{{ item.cache_ttl | default(omit) }}"
+    client_addr: "{{ item.client_addr | default(omit) }}"
+    comment: "{{ item.comment | default(omit) }}"
+    delay: "{{ item.delay | default(omit) }}"
+    destination_hostgroup: "{{ item.destination_hostgroup | default(omit) }}"
+    digest: "{{ item.digest | default(omit) }}"
+    error_msg: "{{ item.error_msg | default(omit) }}"
+    flagIN: "{{ item.flagIN | default('0') }}"
+    flagOUT: "{{ item.flagOUT | default(omit) }}"
+    force_delete: "{{ item.force_delete | default(false) }}"
+    load_to_runtime: "{{ item.load_to_runtime | default(true) }}"
+    log: "{{ item.log | default(omit) }}"
+    login_host: "{{ proxysql_host_admin_interface | default('127.0.0.1') }}"
+    login_password: "{{ proxysql_password_admin_interface }}"
+    login_port: "{{ proxysql_port_admin_interface | default('6032') }}"
+    login_user: "{{ proxysql_user_admin_interface }}"
+    match_digest: "{{ item.match_digest | default(omit) }}"
+    match_pattern: "{{ item.match_pattern | default(omit) }}"
+    mirror_flagOUT: "{{ item.mirror_flagOUT | default(omit) }}"
+    mirror_hostgroup: "{{ item.mirror_hostgroup | default(omit) }}"
+    multiplex: "{{ item.multiplex | default(omit) }}"
+    negate_match_pattern: "{{ item.negate_match_pattern | default(false) }}"
+    OK_msg: "{{ item.OK_msg | default(omit) }}"
+    proxy_addr: "{{ item.proxy_addr | default(omit) }}"
+    proxy_port: "{{ item.proxy_port | default(omit) }}"
+    replace_pattern: "{{ item.replace_pattern | default(omit) }}"
+    retries: "{{ item.retries | default(omit) }}"
+    rule_id: "{{ item.rule_id | default(omit) }}"
+    save_to_disk: "{{ item.save_to_disk | default(true) }}"
+    schemaname: "{{ item.schemaname | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    timeout: "{{ item.timeout | default(omit) }}"
+    username: "{{ item.username | default(omit) }}"
+  with_items: "{{ proxysql_query_rules }}"
+  when: proxysql_query_rules is defined
+  tags:
+    - proxysql_configure

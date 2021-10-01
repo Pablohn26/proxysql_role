@@ -1,0 +1,17 @@
+---
+
+galaxy_info:
+  author: idealista
+  company: Idealista S.A.U.
+  description: Proxysql Role
+  min_ansible_version: 4.2.0
+  license: Apache 2.0
+  galaxy-tags:
+    - proxysql
+    - balancer
+    - percona
+    - mysql
+  platforms:
+    - name: Debian
+      versions:
+        - buster
