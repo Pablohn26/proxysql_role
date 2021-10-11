@@ -34,6 +34,7 @@
       apt:
         pkg: "{{ proxysql_packages }}"
         state: present
+        policy_rc_d: 101
   when: proxysql_force_reinstall or proxysql_check is failed or proxysql_version not in proxysql_check.stdout
   tags:
     - proxysql_install
