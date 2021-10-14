@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a ch
 ### Added
 ### Removed
 ### Fixed
+*[#6](https://github.com/idealista/proxysql_role/issues/6) [BUG] Wait until proxysql service is up* @emepege
 ## [1.0.1](https://github.com/idealista/proxysql_role/tree/1.0.1)
 ### Fixed
 *[#3](https://github.com/idealista/proxysql_role/issues/3) [BUG] ProxySQL service should not be start immediately after package installation* @emepege
