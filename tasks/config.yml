@@ -47,6 +47,10 @@
     state: started
     enabled: "{{ proxysql_service_enabled }}"
     daemon_reload: true
+  register: proxysqlDetails
+  until: proxysqlDetails.status.ActiveState == "active"
+  retries: 15
+  delay: 10
   tags:
     - proxysql_configure
 
