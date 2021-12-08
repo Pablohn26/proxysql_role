@@ -1,22 +1,22 @@
 ---
 
 - name: PROXYSQL | Dependencies
-  include: dependencies.yml
+  include_tasks: dependencies.yml
   tags:
     - proxysql_dependencies
 
 - name: PROXYSQL | Install
-  include: "{{ proxysql_from }}_install.yml"
+  include_tasks: "{{ proxysql_from }}_install.yml"
   tags:
     - proxysql_install
 
 - name: PROXYSQL | SSL Configure
-  include: ssl_config.yml
+  include_tasks: ssl_config.yml
   when: proxysql_ssl_config
   tags:
     - proxysql_ssl_configure
 
 - name: PROXYSQL | Configure
-  include: config.yml
+  include_tasks: config.yml
   tags:
     - proxysql_configure
